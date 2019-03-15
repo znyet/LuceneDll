@@ -20,7 +20,7 @@ namespace TestLucene
             string indexDir = "D:\\indexTest";
             var version = LuceneVersion.LUCENE_48;
             var fsdDir = FSDirectory.Open(indexDir);
-            var analyzer = new JiebaAnalyzer(JiebaNet.Segmenter.TokenizerMode.Default);
+            var analyzer = new JiebaAnalyzer();
             var indexConfig = new IndexWriterConfig(version, analyzer)
             {
                 OpenMode = OpenMode.CREATE_OR_APPEND,
@@ -35,9 +35,14 @@ namespace TestLucene
 
             for (int i = 0; i < 1; i++)
             {
-                var doc = new Document();
+                Document doc = new Document();
                 doc.AddStringField("id", i.ToString(), Field.Store.YES);
                 doc.AddTextField("address", "你好日本注意中国大使馆这是是什么苹果的手机修理电脑", Field.Store.YES);
+
+                //var filed = new StringField("age","你好",Field.Store.YES);
+                //filed.Boost = 1; //设置权重
+                
+
                 writer.AddDocument(doc);
                 Console.WriteLine("add:" + i);
             }
@@ -61,7 +66,7 @@ namespace TestLucene
 
             var parser = new QueryParser(version, null, analyzer);
 
-            var query = parser.Parse("address:电脑");
+            var query = parser.Parse("address:日本");
 
             TopDocs topDocs = search.Search(query, 10);
             ScoreDoc[] docs = topDocs.ScoreDocs;
