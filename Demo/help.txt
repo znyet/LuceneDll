@@ -1,0 +1,9 @@
+StringField：不分词、被索引。 
+TextField：分词、被索引。 
+StoredField：不被索引，当然也不被分词。
+
+
+
+时间和字符处理
+//DateTools 
+//Lucene.Net.Util.NumericUtils

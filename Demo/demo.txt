@@ -1,0 +1,85 @@
+using JiebaNetForLucene;
+using Lucene.Net.Documents;
+using Lucene.Net.Index;
+using Lucene.Net.QueryParsers.Classic;
+using Lucene.Net.Search;
+using Lucene.Net.Store;
+using Lucene.Net.Util;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace TestLucene
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            string indexDir = "D:\\indexTest";
+            var version = LuceneVersion.LUCENE_48;
+            var fsdDir = FSDirectory.Open(indexDir);
+            var analyzer = new JiebaAnalyzer(JiebaNet.Segmenter.TokenizerMode.Default);
+            var indexConfig = new IndexWriterConfig(version, analyzer)
+            {
+                OpenMode = OpenMode.CREATE_OR_APPEND,
+                RAMBufferSizeMB = 16,
+                //MaxBufferedDocs = 10,
+                //MaxBufferedDeleteTerms = 10
+            };
+
+            var writer = new IndexWriter(fsdDir, indexConfig);
+
+            //索引
+
+            for (int i = 0; i < 1; i++)
+            {
+                var doc = new Document();
+                doc.AddStringField("id", i.ToString(), Field.Store.YES);
+                doc.AddTextField("address", "你好日本注意中国大使馆这是是什么苹果的手机修理电脑", Field.Store.YES);
+                writer.AddDocument(doc);
+                Console.WriteLine("add:" + i);
+            }
+
+            ////索引
+            //var doc2 = new Document();
+            //doc2.AddStringField("name", "cd false", Field.Store.YES);
+            //doc2.AddTextField("address", "japan xm", Field.Store.YES);
+            //writer.AddDocument(doc2);
+
+            //writer.Flush(false, false);
+
+
+            //搜索
+            var reader = writer.GetReader(true);
+            var search = new IndexSearcher(reader);
+
+
+            //var term = new Term("name", "ba ok");
+            //var query = new TermQuery(term);
+
+            var parser = new QueryParser(version, null, analyzer);
+
+            var query = parser.Parse("address:电脑");
+
+            TopDocs topDocs = search.Search(query, 10);
+            ScoreDoc[] docs = topDocs.ScoreDocs;
+
+            foreach (ScoreDoc scoreDoc in docs)
+            {
+                var myDoc = search.Doc(scoreDoc.Doc);
+                Console.WriteLine(myDoc.Get("id"));
+                Console.WriteLine(myDoc.Get("address"));
+            }
+
+            //writer.Flush(false, false);
+            //writer.Flush(true, true);
+            //writer.Commit();
+
+            //关闭
+            writer.Dispose();
+            Console.ReadKey();
+        }
+    }
+}
