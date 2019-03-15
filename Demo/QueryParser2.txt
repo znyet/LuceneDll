@@ -1,0 +1,86 @@
+/**
+     * 使用QueryParser进行查询
+     * @throws ParseException
+     */
+    @Test
+    public void testQueryParser() throws ParseException{
+        //4、创建Query
+        //参数1：版本
+        //参数2：默认搜索域(默认的搜索属性)
+        //参数3：分词器
+        QueryParser parser = new QueryParser(version,"content",new StandardAnalyzer(version));
+        
+        //获取Query对象
+        //parse() 解析查询条件
+        //1、精确匹配
+        //在content中查询关键字为dual的条目
+        Query query = parser.parse("dual");
+
+        //查询到3条
+        query = parser.parse("my");
+        query = parser.parse("My");
+        
+        //2、分词匹配
+        //parser通过空格对关键字进行分隔
+        //空格相当于or
+        //搜索到3条（wore || my）
+        query = parser.parse("wore my");
+        //搜多到1条(wore || mother)
+        query = parser.parse("wore mother");
+        
+        //默认连接符可以通过setDefaultOperator()进行修改
+        //parser.setDefaultOperator(Operator.AND);
+        //搜索到1条(wore && my)
+        query = parser.parse("wore my");
+        query = parser.parse("my wore");
+
+        //3、修改属性域
+        //"属性域名称：值"
+        query = parser.parse("author:Lucy");
+        
+        //4、通配符匹配
+        //通配符在后
+        query = parser.parse("author:L*");
+        query = parser.parse("author:L???");
+        
+        //出现错误
+        parser.setAllowLeadingWildcard(true);
+        //因为Lucene认为通配符在前的查询方式效率较低。所以不建议使用
+        query = parser.parse("author:*k");
+        
+        //5、区间查询
+        //TO必须全部大写
+        //开区间：不包含两个端点的值。如:(2,5)    2 < x < 5        
+        //闭区间：包含两个端点的值。如:[2,5] 2<=x<=5
+        //闭区间查询
+        query = parser.parse("id:[1 TO 3]");
+        //开区间（只查询到2）
+        query = parser.parse("id:{1 TO 3}");
+        query = parser.parse("author:[M TO Z]");
+        //区间无法对数值类型进行查询
+        query = parser.parse("size:[1 TO 1000]");
+        //提示：无法使用半开闭区间
+        //query = parser.parse("id:{1 TO 3]");
+        
+        //6、多条件查询
+        //-：必须不包含（排除）；+：必须包含
+        //查询author不包含Mike 或content中包含my的所有条目
+        query = parser.parse("- author:Mike + content:my");
+        
+        //7、and连接符
+        query = parser.parse("\"my and mother\"");
+        
+        //8、短语查询
+        //查询一个整句
+        query = parser.parse("\"my mother is health\"");
+        
+        //9、距离查询
+        //~2表示词语之间包含两个词语
+        query= parser.parse("\"my health\"~2");
+        
+        //10、模糊匹配
+        query = parser.parse("configer~");
+        
+        util.searchByQueryParser(path, 10, query);
+        System.out.println("QueryParser查询结束");
+    }
