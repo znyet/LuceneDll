@@ -1,0 +1,95 @@
+1． TermQuery与QueryParser
+
+单个单词作为查询表达式时，它相当于一个单独的项。如果表达式是由单个单词构成，QueryParser的parse()方法会返回一个TermQuery对象。
+
+ 
+
+如查询表达式为：content:hello，QueryParser会返回一个域为content，值为hello的TermQuery。
+
+Query query = new TermQuery(“content”, “hello”).
+
+ 
+
+2． RangeQuery与QueryParser
+
+QueryParse可以使用[起始 TO 终止]或{起始 TO 终止}表达式来构造RangeQuery。
+
+ 
+
+如查询表达式为：time：[20101010 TO 20101210] ，QueryParser会返回一个域为time，下限为20101010，上限为20101210的RangeQuery。
+
+Term t1 = new Term(“time”, “20101010”);
+
+Term t2 = new Term(“time”, “20101210”);
+
+Query query = new RangeQuery(t1, t2, true);
+
+ 
+
+3． PrefixQuery与QueryParser
+
+当查询表达式中短语以星号（*）结尾时，QueryParser会创建一个PrefixQuery对象。
+
+ 
+
+如查询表达式为：content：luc*，则QueryParser会返回一个域为content，值为luc的PrefixQuery.
+
+Query query = new PrefixQuery(luc);
+
+ 
+
+4． BooleanQuery与QueryParser
+
+当查询表达式中包含多个项时，QueryParser可以方便的构建BooleanQuery。QueryParser使用圆括号分组，通过-，+，AND, OR及NOT来指定所生成的Boolean Query。
+
+ 
+
+5． PhraseQuery与QueryParser
+
+在QueryParser的分析表达式中双引号的若干项会被转换为一个PhraseQuery对象，默认情况下，Slop因子为0，可以在表达式中通过~n来指定slop因子的值。
+
+ 
+
+如查询表达式为content：“hello world” ~3，则QueryParser会返回一个域为content，内容为“hello world”，slop为3的短语查询。
+
+Query query = new PhraseQuery();
+
+query.setSlop(3);
+
+query.add(new Term(“content”, “hello”);
+
+query.add(new Term(“content”, “world”);
+
+ 
+
+6. Wildcard与QueryParser
+
+    Lucene使用两个标准的通配符号，*代表0或多个字母，？代表0或1个字母。但查询表达式中包含*或？时，则QueryParser会返回一个WildcardQuery对象。但要注意的是，当*出现在查询表达式的末尾时，会被优化为PrefixQuery；并且查询表达式的首个字符不能是通配符，防止用户输入以通配符*为前缀的搜索表达式，导致lucene枚举所有的项而耗费巨大的资源。
+
+ 
+
+6． FuzzyQuery和QueryParser
+
+QueryParser通过在某个项之后添加“~”来支持FuzzyQuery类的模糊查询。
+
+   
+
+    Lucene提供的QueryParser是搜索引擎中重要的一个环节，如当我们使用Google等搜索引擎时，当我们往搜索框中输入查询表达式后，Google的引擎会先对我们的输入进行分析，并产生相应的内部查询，这也就是为什么goole有一系列的搜索技巧了。
+
+ 
+
+Google的搜索技巧与Lucene的查询类比
+
+ 
+
+1． 基本搜索（类比Termquery）。
+
+2． 搜索两个及两个以上关键字，搜索结果不包含某些特定信息（类比BooleanQuery）。
+
+3． 整词的搜索（使用引号，类比PhraseQuery）。
+
+4． 使用filetype:xxx限定搜索文件类型。
+
+5． 使用site:xxx限定搜索的网站范围。
+
+6． 使用intitle:xxx, inurl:xxx, intext:xxx来限定搜索域。
