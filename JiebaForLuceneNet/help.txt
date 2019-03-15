@@ -1,0 +1,3 @@
+https://www.cnblogs.com/dacc123/p/8431369.html
+https://github.com/SilentCC/JIEba-netcore2.0
+https://github.com/anderscui/jieba.NET
