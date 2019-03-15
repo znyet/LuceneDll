@@ -5,11 +5,18 @@ using Lucene.Net.Analysis;
 using Lucene.Net.Analysis.Core;
 using Lucene.Net.Analysis.TokenAttributes;
 
-namespace jiebaNetForLucene
+namespace JiebaNetForLucene
 {
     public class JiebaAnalyzer : Analyzer
     {
         public TokenizerMode mode;
+
+        public JiebaAnalyzer()
+            : base()
+        {
+            this.mode = TokenizerMode.Search;
+        }
+
         public JiebaAnalyzer(TokenizerMode Mode)
             : base()
         {
