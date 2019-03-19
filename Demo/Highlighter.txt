@@ -3,7 +3,7 @@ var query = parser.Parse("日本 大使馆");
 
 SimpleHTMLFormatter simpleHTMLFormatter = new SimpleHTMLFormatter("<span style='color:red'>", "</span>");
 Highlighter highlighter = new Highlighter(simpleHTMLFormatter, new QueryScorer(query));
-
+highlighter.TextFragmenter = new SimpleFragmenter(50); //高亮后长度为50
 
 TopDocs topDocs = search.Search(query, 10);
 ScoreDoc[] docs = topDocs.ScoreDocs;
@@ -16,4 +16,5 @@ foreach (ScoreDoc scoreDoc in docs)
 	string content = highlighter.GetBestFragment(tokenStream, myDoc.Get("address"));
 
 	Console.WriteLine(content);
+
 }
