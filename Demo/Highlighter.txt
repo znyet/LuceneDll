@@ -1,0 +1,19 @@
+QueryParser parser = new QueryParser(LuceneVersion.LUCENE_48, "address", analyzer);
+var query = parser.Parse("日本 大使馆");
+
+SimpleHTMLFormatter simpleHTMLFormatter = new SimpleHTMLFormatter("<span style='color:red'>", "</span>");
+Highlighter highlighter = new Highlighter(simpleHTMLFormatter, new QueryScorer(query));
+
+
+TopDocs topDocs = search.Search(query, 10);
+ScoreDoc[] docs = topDocs.ScoreDocs;
+
+foreach (ScoreDoc scoreDoc in docs)
+{
+	var myDoc = search.Doc(scoreDoc.Doc);
+
+	TokenStream tokenStream = analyzer.GetTokenStream("", myDoc.Get("address"));
+	string content = highlighter.GetBestFragment(tokenStream, myDoc.Get("address"));
+
+	Console.WriteLine(content);
+}
