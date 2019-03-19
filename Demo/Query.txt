@@ -1,0 +1,138 @@
+ /**
+     * 创建用户:狂飙的yellowcong<br/>
+     * 创建日期:2017年12月3日<br/>
+     * 创建时间:下午12:00:43<br/>
+     * 机能概要:精确查询
+     * @throws Exception
+     */
+    public static void getByTermQuery() {
+        System.out.println("-------------查询用户名为yellowcong的数据-------------");
+        //精确查询，根据名称来直接
+        Query query = new TermQuery(new Term("username", "yellowcong"));
+ 
+        //执行查询
+        excQuery(query);
+    }
+ 
+    /**
+     * 创建用户:狂飙的yellowcong<br/>
+     * 创建日期:2017年12月3日<br/>
+     * 创建时间:下午12:25:21<br/>
+     * 机能概要:范围查询
+     */
+    public static void getByRange(){
+        //精确查询
+        System.out.println("-------------查询id在1-3的数据-------------");
+        //查询前三条数据，后面两个true,表示的是是否包含头和尾
+        Query query = NumericRangeQuery.newIntRange("id", 1, 3, true, true);
+        //执行查询
+        excQuery(query);
+    }
+ 
+    /**
+     * 创建用户:狂飙的yellowcong<br/>
+     * 创建日期:2017年12月3日<br/>
+     * 创建时间:下午12:25:56<br/>
+     * 机能概要:前缀查询数据
+     */
+    public static void getByPrefix(){
+        System.out.println("-------------查询前缀 邮箱 以z开头的数据-------------");
+        //查询前缀 邮箱 以z开头的数据
+        Query query = new PrefixQuery(new Term("email", "z"));
+ 
+        //执行查询
+        excQuery(query);
+    }
+ 
+    /**
+     * 创建用户:狂飙的yellowcong<br/>
+     * 创建日期:2017年12月3日<br/>
+     * 创建时间:下午12:29:55<br/>
+     * 机能概要:通配符查询数据
+     */
+    public static void getByWildcard(){
+        //通配符就更简单了，只要知道“*”表示0到多个字符，而使用“？”表示一个字符就行了
+        System.out.println("-------------------查询email 以 @qq结尾的数据--------------");
+        //查询email 以 @qq结尾的数据
+        Query query = new WildcardQuery(new Term("email","*@qq.com"));
+        //执行查询
+        excQuery(query);
+    }
+ 
+    /**
+     * 创建用户:狂飙的yellowcong<br/>
+     * 创建日期:2017年12月3日<br/>
+     * 创建时间:下午12:43:43<br/>
+     * 机能概要:短语查询，查询中间有几个单词的那种
+     */
+    public static void getByPhrase(){
+        System.out.println("------------查询内容中，有I　LOVE　YOU 的数据---------------");
+        //短语查询，但是对于中文没有太多的用，其中查询的时候还有
+        PhraseQuery query = new PhraseQuery();
+        //设定有几跳，表示中间存在一个单词
+        query.setSlop(1);
+        //查询
+        query.add(new Term("content","i"));
+ 
+        //I  XX you  就可以被查询出来
+        query.add(new Term("content","you"));
+ 
+        excQuery(query);
+    }
+ 
+    /**
+     * 创建用户:狂飙的yellowcong<br/>
+     * 创建日期:2017年12月3日<br/>
+     * 创建时间:下午12:49:14<br/>
+     * 机能概要:默认提供的模糊查询对中文来说，没有任何用
+     * @throws Exception
+     */
+    public  static void getByFuzzy() throws Exception{
+        System.out.println("-------------------------模糊查询---------------");
+        FuzzyQuery query = new FuzzyQuery(new Term("username","zhangsan"));
+        excQuery(query);
+    }
+
+----------------------------------------------------
+@Test
+    public void searchByQueryPhase() throws ParseException{
+        IndexUtils utls = new IndexUtils();
+        //设定默认搜索域,将默认搜索域 设定在Content
+        QueryParser parse = new QueryParser(Version.LUCENE_35, "content",new StandardAnalyzer(Version.LUCENE_35));
+//      parse.setDefaultOperator(Operator.AND);//将空格默认 定义为AND
+        parse.setAllowLeadingWildcard(true);//设定第一个* 可以匹配
+        Query query = parse.parse("yellow");
+        //其中空格默认就是OR 
+        query = parse.parse("yellow cong");
+ 
+        //改变搜索域，搜索域 为 name
+        query = parse.parse("name:yellow1");
+ 
+        //使用通配符 ， 设定查询类容为 以 y 开头的数据
+        query = parse.parse("name:y*"); //其中* 不可以放在字符串的首位
+ 
+        //将字符串放在首位，默认情况下回报错
+        query = parse.parse("email:*@yellow.com"); //其中我们可以更改 第一个通配值得功能
+ 
+        //其中 + - 表示有 和没有 其中需要有空格 ，而且第一个+ 或者 - 需要放在第一个位置
+        query = parse.parse("- content: cong  + i "); //这个表示的是content 中不含有 cong ，但是含有i
+ 
+        //匹配区间， 其中TO 必须是大写的，还有有空格
+        query = parse.parse("id:[1 TO 4]"); //设定查询的Id为 1-4
+ 
+         //开区间匹配
+        query = parse.parse("id:(1 TO 4)");
+        //匹配连起来的String
+        query = parse.parse("\"I like yellow cong\""); //这个是查询的一个一个词  ，匹配String
+ 
+        //匹配一个或者多个数据
+        query = parse.parse("\"I cong\"~2"); //表示中间含有一个单词
+ 
+        //模糊查询
+        query = parse.parse("name:yellow~");
+ 
+        //匹配数字,这个方法中没有字符类容，所以需要自定义了
+ 
+        IndexReaderHelper.searchByQueryPhase(query, 10);
+    }
+
