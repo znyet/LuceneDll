@@ -1,0 +1,12 @@
+var writer = new IndexWriter(fsdDir, indexConfig);
+
+TrackingIndexWriter trackingWriter = new TrackingIndexWriter(writer);
+SearcherManager searcherManager = new SearcherManager(writer, true, new SearcherFactory());
+ControlledRealTimeReopenThread<IndexSearcher> thread = new ControlledRealTimeReopenThread<IndexSearcher>(trackingWriter, searcherManager, 60, 1);
+thread.SetDaemon(true); //设为后台线程  
+thread.Name = "后台刷新服务";
+thread.Start();
+
+IndexSearcher mySearch = searcherManager.Acquire(); //请求
+
+searcherManager.Release(mySearch); //释放
